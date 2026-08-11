@@ -20,7 +20,7 @@ module id_ex (
     input branch_in,
 
     input [2:0] funct3_in,
-    input [6:0] funct7_in,
+    input funct7_in,
     input is_rtype_in,
 
 
@@ -42,7 +42,7 @@ module id_ex (
     output reg branch_out,  
 
     output reg [2:0] funct3_out,
-    output reg [6:0] funct7_out,
+    output reg funct7_out,
     output reg is_rtype_out
 );
 
@@ -66,7 +66,7 @@ module id_ex (
             branch_out <= 1'b0;
 
             funct3_out <= 3'b0;
-            funct7_out <= 7'b0;
+            funct7_out <= 1'b0;
             is_rtype_out <= 1'b0;
         end else begin
             pc_out <= pc_in;

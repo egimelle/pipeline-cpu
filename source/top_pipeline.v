@@ -33,6 +33,10 @@ wire [4:0] rs1, rs2, rd;
 wire [2:0] funct3;
 wire funct7;
 wire is_rtype;
+wire [31:0] wb_read_data_mem, wb_alu_result;
+wire [4:0] wb_rd;
+wire wb_reg_write, wb_mem_to_reg;
+wire [31:0] wb_write_back_data;
 
 id_stage id_stage_inst(
     .clk(clk),
@@ -97,7 +101,7 @@ id_ex id_ex_inst(
     .pc_out(ex_pc),
     .read_data1_out(ex_read_data1),
     .read_data2_out(ex_read_data2),
-    .imm_out_out(ex_imm_out),
+    .imm_out(ex_imm_out),
     .rs1_out(ex_rs1),
     .rs2_out(ex_rs2),
     .rd_out(ex_rd),
@@ -169,9 +173,6 @@ mem_stage mem_stage_inst(
 );
 
 //MEM/WB
-wire [31:0] wb_read_data_mem, wb_alu_result;
-wire [4:0] wb_rd;
-wire wb_reg_write, wb_mem_to_reg;
 mem_wb mem_wb_inst(
     .clk(clk),
     .rst(rst),
@@ -190,7 +191,6 @@ mem_wb mem_wb_inst(
 
 
 //WB
-wire [31:0] wb_write_back_data;
 wb_stage wb_stage_inst(
     .mem_to_reg(wb_mem_to_reg),
     .mem_read_data(wb_read_data_mem),

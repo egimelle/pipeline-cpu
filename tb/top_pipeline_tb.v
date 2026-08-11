@@ -15,15 +15,34 @@ module top_pipeline_tb;
         $dumpfile("top_pipeline_tb.vcd");
         $dumpvars(0, top_pipeline_tb);
 
-        clk=0;
-        rst=1;
+        clk = 0;
+        rst = 1;
         #12;
-        rst=0;
-        #100;
+        rst = 0;
+
+        #200;
+
+        // финальные значения регистров (через иерархию до regfile внутри id_stage)
+        $display("---- Final registers ----");
+        $display("x1 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[1]);
+        $display("x2 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[2]);
+        $display("x3 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[3]);
+        $display("x4 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[4]);
+        $display("x5 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[5]);
+        $display("x6 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[6]);
+
         $finish;
     end
+
     initial begin
-        $monitor("Time: %0t if_instr=%h id_instr=%h pc_out=%0d",
-        $time, top_pipeline_inst.if_instruction, top_pipeline_inst.id_instruction, top_pipeline_inst.if_pc_out);
+        $monitor("t=%0t | IF=%h | ID=%h | EX_alu=%0d | MEM_alu=%0d | WB_data=%0d",
+            $time,
+            top_pipeline_inst.if_instruction,
+            top_pipeline_inst.id_instruction,
+            top_pipeline_inst.ex_alu_result,
+            top_pipeline_inst.mem_alu_result,
+            top_pipeline_inst.wb_write_back_data
+        );
     end
+
 endmodule
