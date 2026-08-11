@@ -28,21 +28,4 @@ module forwarding_unit(
         else
             forward_b = 2'b00;
     end
-    
-wire [31:0] forward_mux_a, forward_mux_b;
-    always @(*) begin
-        case(forward_a)
-        2'b10: forward_mux_a = mem_alu_result;
-        2'b01: forward_mux_a = wb_write_back_data;
-        default: forward_mux_a = ex_read_data1;
-        endcase
-    end
-
-    always @(*) begin
-        case(forward_b)
-        2'b10: forward_mux_b = mem_alu_result;
-        2'b01: forward_mux_b = wb_write_back_data;
-        default: forward_mux_b = ex_read_data2;
-        endcase
-    end
 endmodule
