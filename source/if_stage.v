@@ -1,6 +1,7 @@
 module if_stage(
     input clk,
     input rst,
+    input pc_write,
     input [31:0] pc_next,
 
     output [31:0] pc_out,
@@ -12,6 +13,7 @@ module if_stage(
     pc pc_inst(
         .clk(clk),
         .rst(rst),
+        .pc_write(pc_write),
         .pc_next(pc_next),
         .pc_out(pc_out)
     );

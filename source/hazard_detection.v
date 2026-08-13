@@ -8,15 +8,15 @@ module hazard_detection(
     output reg if_id_write,
     output reg control_mux_sel
 );
-always @(*) begin
-    if (id_ex_mem_read && ((id_ex_rd == if_id_rs1) || (id_ex_rd == if_id_rs2)) && (id_ex_rd != 5'b0)) begin
-        pc_write = 1'b0;
-        if_id_write = 1'b0;
-        control_mux_sel = 1'b1;
-    end else begin
-        pc_write = 1'b1;
-        if_id_write = 1'b1;
-        control_mux_sel = 1'b0;
-    end
+    always @(*) begin
+        if (id_ex_mem_read && ((id_ex_rd == if_id_rs1) || (id_ex_rd == if_id_rs2)) && (id_ex_rd != 5'b0)) begin
+            pc_write = 1'b0;
+            if_id_write = 1'b0;
+            control_mux_sel = 1'b1;
+        end else begin
+            pc_write = 1'b1;
+            if_id_write = 1'b1;
+            control_mux_sel = 1'b0;
+        end
     end
 endmodule

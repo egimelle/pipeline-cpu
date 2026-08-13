@@ -4,10 +4,32 @@ module top_pipeline(
 );
 wire flush;
 wire [31:0] if_pc_next;
+wire pc_write, if_id_write, control_mux_sel;
 //IF
 wire [31:0] if_pc_out, if_instruction, if_pc_plus4;
+if_stage if_stage_inst(
+    .clk(clk),
+    .rst(rst),
+    .pc_write(pc_write),
+    .pc_next(if_pc_next),
+    .pc_out(if_pc_out),
+    .instruction(if_instruction),
+    .pc_plus4(if_pc_plus4)
+);
+
 //IF/ID
 wire [31:0] id_pc, id_instruction;
+if_id if_id_inst(
+    .clk(clk),
+    .rst(rst),
+    .flush(flush),
+    .if_id_write(if_id_write),
+    .pc_in(if_pc_out),
+    .instruction_in(if_instruction),
+    .pc_out(id_pc),
+    .instruction_out(id_instruction)
+);
+
 //ID
 wire reg_write, alu_src, mem_write, mem_to_reg, branch, mem_read;
 wire [1:0] alu_op;
@@ -20,50 +42,7 @@ wire [31:0] wb_read_data_mem, wb_alu_result;
 wire [4:0] wb_rd;
 wire wb_reg_write, wb_mem_to_reg;
 wire [31:0] wb_write_back_data;
-//ID/EX
-wire [31:0] ex_pc, ex_read_data1, ex_read_data2, ex_imm_out;
-wire [4:0] ex_rs1, ex_rs2, ex_rd;
-wire [1:0] ex_alu_op;
-wire ex_alu_src, ex_reg_write, ex_mem_write, ex_mem_to_reg, ex_mem_read, ex_branch;
-wire [2:0] ex_funct3;
-wire ex_funct7, ex_is_rtype;
-//---- Forwarding unit ----
-wire [1:0] forward_a, forward_b;
-//EX
-wire [31:0] ex_alu_result, ex_branch_target;
-wire ex_zero;
-//EX/MEM
-wire [31:0] mem_alu_result, mem_write_data;
-wire [4:0] mem_rd;
-wire mem_reg_write, mem_mem_write, mem_mem_to_reg, mem_mem_read;
-//MEM
-wire [31:0] mem_read_data;
-//branch control
-wire pc_src;
 
-
-//if
-if_stage if_stage_inst(
-    .clk(clk),
-    .rst(rst),
-    .pc_next(if_pc_next),
-    .pc_out(if_pc_out),
-    .instruction(if_instruction),
-    .pc_plus4(if_pc_plus4)
-);
-
-//if/id
-if_id if_id_inst(
-    .clk(clk),
-    .rst(rst),
-    .flush(flush),
-    .pc_in(if_pc_out),
-    .instruction_in(if_instruction),
-    .pc_out(id_pc),
-    .instruction_out(id_instruction)
-);
-
-//id
 id_stage id_stage_inst(
     .clk(clk),
     .instruction(id_instruction),
@@ -91,6 +70,35 @@ id_stage id_stage_inst(
     .is_rtype(is_rtype)
 );
 
+//---- Hazard detection unit (load-use stall) ----
+// ID/EX output wires declared early so hazard_detection can bind them
+wire [31:0] ex_pc, ex_read_data1, ex_read_data2, ex_imm_out;
+wire [4:0] ex_rs1, ex_rs2, ex_rd;
+wire [1:0] ex_alu_op;
+wire ex_alu_src, ex_reg_write, ex_mem_write, ex_mem_to_reg, ex_mem_read, ex_branch;
+wire [2:0] ex_funct3;
+wire ex_funct7, ex_is_rtype;
+
+hazard_detection hazard_detection_inst(
+    .id_ex_mem_read(ex_mem_read),
+    .id_ex_rd(ex_rd),
+    .if_id_rs1(rs1),
+    .if_id_rs2(rs2),
+
+    .pc_write(pc_write),
+    .if_id_write(if_id_write),
+    .control_mux_sel(control_mux_sel)
+);
+
+//ID/EX
+//---- Bubble insertion mux: zero out control signals into ID/EX during stall ----
+wire mux_reg_write   = control_mux_sel ? 1'b0 : reg_write;
+wire mux_mem_write   = control_mux_sel ? 1'b0 : mem_write;
+wire mux_mem_to_reg  = control_mux_sel ? 1'b0 : mem_to_reg;
+wire mux_mem_read    = control_mux_sel ? 1'b0 : mem_read;
+wire mux_branch      = control_mux_sel ? 1'b0 : branch;
+wire [1:0] mux_alu_op = control_mux_sel ? 2'b00 : alu_op;
+
 id_ex id_ex_inst(
     .clk(clk),
     .rst(rst),
@@ -105,13 +113,13 @@ id_ex id_ex_inst(
     .rs2_in(rs2),
     .rd_in(rd),
 
-    .alu_op_in(alu_op),
+    .alu_op_in(mux_alu_op),
     .alu_src_in(alu_src),
-    .reg_write_in(reg_write),
-    .mem_write_in(mem_write),
-    .mem_to_reg_in(mem_to_reg),
-    .mem_read_in(mem_read),
-    .branch_in(branch),
+    .reg_write_in(mux_reg_write),
+    .mem_write_in(mux_mem_write),
+    .mem_to_reg_in(mux_mem_to_reg),
+    .mem_read_in(mux_mem_read),
+    .branch_in(mux_branch),
 
     .funct3_in(funct3),
     .funct7_in(funct7),
@@ -136,7 +144,13 @@ id_ex id_ex_inst(
     .is_rtype_out(ex_is_rtype)
 );
 
+//EX/MEM wires (declared early so forwarding_unit / ex_stage can bind them)
+wire [31:0] mem_alu_result, mem_write_data;
+wire [4:0] mem_rd;
+wire mem_reg_write, mem_mem_write, mem_mem_to_reg, mem_mem_read;
 
+//---- Forwarding unit ----
+wire [1:0] forward_a, forward_b;
 forwarding_unit forwarding_unit_inst(
     .ex_rs1(ex_rs1),
     .ex_rs2(ex_rs2),
@@ -151,7 +165,9 @@ forwarding_unit forwarding_unit_inst(
     .forward_b(forward_b)
 );
 
-
+//EX
+wire [31:0] ex_alu_result, ex_branch_target;
+wire ex_zero;
 ex_stage ex_stage_inst(
     .pc(ex_pc),
     .read_data1(ex_read_data1),
@@ -173,7 +189,7 @@ ex_stage ex_stage_inst(
     .branch_target(ex_branch_target)
 );
 
-
+//EX/MEM
 ex_mem ex_mem_inst(
     .clk(clk),
     .rst(rst),
@@ -195,7 +211,8 @@ ex_mem ex_mem_inst(
     .mem_read_out(mem_mem_read)
 );
 
-
+//MEM
+wire [31:0] mem_read_data;
 mem_stage mem_stage_inst(
     .clk(clk),
     .mem_read(mem_mem_read),
@@ -233,6 +250,8 @@ wb_stage wb_stage_inst(
 );
 
 
+//branch control
+wire pc_src;
 assign pc_src = ex_branch && ex_zero;
 assign if_pc_next = pc_src ? ex_branch_target : if_pc_plus4;
 assign flush = pc_src;
