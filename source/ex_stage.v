@@ -9,14 +9,38 @@ module ex_stage(
     input funct7,
     input is_rtype,
 
+    // forwarding
+    input [1:0] forward_a,
+    input [1:0] forward_b,
+    input [31:0] mem_alu_result_fwd,   // EX/MEM stage result (for forward_x = 10)
+    input [31:0] wb_write_back_data,   // WB stage result   (for forward_x = 01)
+
     output [31:0] alu_result,
     output zero,
     output [31:0] branch_target
 );
 
-    //alu input mux
+    // forwarding muxes: pick the freshest value of rs1 / rs2
+    reg [31:0] alu_in_a;
+    reg [31:0] read_data2_fwd;
+
+    always @(*) begin
+        case (forward_a)
+            2'b10:   alu_in_a = mem_alu_result_fwd;
+            2'b01:   alu_in_a = wb_write_back_data;
+            default: alu_in_a = read_data1;
+        endcase
+
+        case (forward_b)
+            2'b10:   read_data2_fwd = mem_alu_result_fwd;
+            2'b01:   read_data2_fwd = wb_write_back_data;
+            default: read_data2_fwd = read_data2;
+        endcase
+    end
+
+    //alu input mux (imm vs forwarded read_data2)
     wire [31:0] alu_b;
-    assign alu_b = alu_src ? imm_out : read_data2;
+    assign alu_b = alu_src ? imm_out : read_data2_fwd;
 
     //alu_control
     wire [3:0] alu_control_signal;
@@ -28,9 +52,9 @@ module ex_stage(
         .alu_control(alu_control_signal)
     );
 
-    //alu 
+    //alu
     alu alu_inst(
-        .a(read_data1),
+        .a(alu_in_a),
         .b(alu_b),
         .alu_control(alu_control_signal),
         .result(alu_result),

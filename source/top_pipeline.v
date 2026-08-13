@@ -2,29 +2,12 @@ module top_pipeline(
     input clk,
     input rst
 );
-
+wire flush;
+wire [31:0] if_pc_next;
 //IF
 wire [31:0] if_pc_out, if_instruction, if_pc_plus4;
-if_stage if_stage_inst(
-    .clk(clk),
-    .rst(rst),
-    .pc_next(if_pc_plus4),
-    .pc_out(if_pc_out),
-    .instruction(if_instruction),
-    .pc_plus4(if_pc_plus4)
-);
-
 //IF/ID
 wire [31:0] id_pc, id_instruction;
-if_id if_id_inst(
-    .clk(clk),
-    .rst(rst),
-    .pc_in(if_pc_out),
-    .instruction_in(if_instruction),
-    .pc_out(id_pc),
-    .instruction_out(id_instruction)
-);
-
 //ID
 wire reg_write, alu_src, mem_write, mem_to_reg, branch, mem_read;
 wire [1:0] alu_op;
@@ -37,7 +20,50 @@ wire [31:0] wb_read_data_mem, wb_alu_result;
 wire [4:0] wb_rd;
 wire wb_reg_write, wb_mem_to_reg;
 wire [31:0] wb_write_back_data;
+//ID/EX
+wire [31:0] ex_pc, ex_read_data1, ex_read_data2, ex_imm_out;
+wire [4:0] ex_rs1, ex_rs2, ex_rd;
+wire [1:0] ex_alu_op;
+wire ex_alu_src, ex_reg_write, ex_mem_write, ex_mem_to_reg, ex_mem_read, ex_branch;
+wire [2:0] ex_funct3;
+wire ex_funct7, ex_is_rtype;
+//---- Forwarding unit ----
+wire [1:0] forward_a, forward_b;
+//EX
+wire [31:0] ex_alu_result, ex_branch_target;
+wire ex_zero;
+//EX/MEM
+wire [31:0] mem_alu_result, mem_write_data;
+wire [4:0] mem_rd;
+wire mem_reg_write, mem_mem_write, mem_mem_to_reg, mem_mem_read;
+//MEM
+wire [31:0] mem_read_data;
+//branch control
+wire pc_src;
 
+
+//if
+if_stage if_stage_inst(
+    .clk(clk),
+    .rst(rst),
+    .pc_next(if_pc_next),
+    .pc_out(if_pc_out),
+    .instruction(if_instruction),
+    .pc_plus4(if_pc_plus4)
+);
+
+//if/id
+if_id if_id_inst(
+    .clk(clk),
+    .rst(rst),
+    .flush(flush),
+    .pc_in(if_pc_out),
+    .instruction_in(if_instruction),
+    .pc_out(id_pc),
+    .instruction_out(id_instruction)
+);
+
+//id
 id_stage id_stage_inst(
     .clk(clk),
     .instruction(id_instruction),
@@ -65,17 +91,10 @@ id_stage id_stage_inst(
     .is_rtype(is_rtype)
 );
 
-//ID/EX
-wire [31:0] ex_pc, ex_read_data1, ex_read_data2, ex_imm_out;
-wire [4:0] ex_rs1, ex_rs2, ex_rd;
-wire [1:0] ex_alu_op;
-wire ex_alu_src, ex_reg_write, ex_mem_write, ex_mem_to_reg, ex_mem_read, ex_branch;
-wire [2:0] ex_funct3;
-wire ex_funct7, ex_is_rtype;
-
 id_ex id_ex_inst(
     .clk(clk),
     .rst(rst),
+    .flush(flush),
 
     .pc_in(id_pc),
     .read_data1_in(read_data1),
@@ -117,9 +136,22 @@ id_ex id_ex_inst(
     .is_rtype_out(ex_is_rtype)
 );
 
-//EX
-wire [31:0] ex_alu_result, ex_branch_target;
-wire ex_zero;
+
+forwarding_unit forwarding_unit_inst(
+    .ex_rs1(ex_rs1),
+    .ex_rs2(ex_rs2),
+
+    .mem_rd(mem_rd),
+    .mem_reg_write(mem_reg_write),
+
+    .wb_rd(wb_rd),
+    .wb_reg_write(wb_reg_write),
+
+    .forward_a(forward_a),
+    .forward_b(forward_b)
+);
+
+
 ex_stage ex_stage_inst(
     .pc(ex_pc),
     .read_data1(ex_read_data1),
@@ -131,15 +163,17 @@ ex_stage ex_stage_inst(
     .funct7(ex_funct7),
     .is_rtype(ex_is_rtype),
 
+    .forward_a(forward_a),
+    .forward_b(forward_b),
+    .mem_alu_result_fwd(mem_alu_result),
+    .wb_write_back_data(wb_write_back_data),
+
     .alu_result(ex_alu_result),
     .zero(ex_zero),
     .branch_target(ex_branch_target)
 );
 
-//EX/MEM
-wire [31:0] mem_alu_result, mem_write_data;
-wire [4:0] mem_rd;
-wire mem_reg_write, mem_mem_write, mem_mem_to_reg, mem_mem_read;
+
 ex_mem ex_mem_inst(
     .clk(clk),
     .rst(rst),
@@ -161,8 +195,7 @@ ex_mem ex_mem_inst(
     .mem_read_out(mem_mem_read)
 );
 
-//MEM
-wire [31:0] mem_read_data;
+
 mem_stage mem_stage_inst(
     .clk(clk),
     .mem_read(mem_mem_read),
@@ -199,4 +232,8 @@ wb_stage wb_stage_inst(
     .write_back_data(wb_write_back_data)
 );
 
+
+assign pc_src = ex_branch && ex_zero;
+assign if_pc_next = pc_src ? ex_branch_target : if_pc_plus4;
+assign flush = pc_src;
 endmodule

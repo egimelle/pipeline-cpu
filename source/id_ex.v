@@ -1,6 +1,7 @@
 module id_ex (
     input clk,
     input rst,
+    input flush,
 
     input [31:0] pc_in,
     input [31:0] read_data1_in,
@@ -47,7 +48,7 @@ module id_ex (
 );
 
     always @(posedge clk or posedge rst) begin
-        if (rst) begin
+        if (rst || flush) begin
             pc_out <= 32'b0;
             read_data1_out <= 32'b0;
             read_data2_out <= 32'b0;
