@@ -10,7 +10,7 @@ top uut (
 
 always #5 clk = ~clk;
 
-initial begin 
+initial begin
     $dumpfile ("top_tb.vcd");
     $dumpvars(0, top_tb);
 
@@ -20,7 +20,6 @@ initial begin
     #12;
     rst = 0;
 
-    
     #200;
     $display("x1 = %d", uut.register_file_inst.registers[1]);
     $display("x2 = %d", uut.register_file_inst.registers[2]);

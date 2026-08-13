@@ -1,4 +1,3 @@
-//control_unit.v
 module control_unit(
     input [6:0] opcode,
 
@@ -13,7 +12,7 @@ module control_unit(
 
     always @(*) begin
         case (opcode)
-            7'b0110011: begin // R-type
+            7'b0110011: begin
                 reg_write = 1;
                 alu_src = 0;
                 mem_write = 0;
@@ -22,16 +21,16 @@ module control_unit(
                 branch = 0;
                 mem_read = 0;
             end
-            7'b0010011: begin // I-type (arithmetic)
+            7'b0010011: begin
                 reg_write = 1;
                 alu_src = 1;
                 mem_write = 0;
-                alu_op = 2'b10; 
+                alu_op = 2'b10;
                 mem_to_reg = 0;
                 branch = 0;
                 mem_read = 0;
             end
-            7'b0000011: begin // I-type (load)
+            7'b0000011: begin
                 reg_write = 1;
                 alu_src = 1;
                 mem_write = 0;
@@ -40,32 +39,32 @@ module control_unit(
                 branch = 0;
                 mem_read = 1;
             end
-            7'b0100011: begin // S-type (store)
+            7'b0100011: begin
                 reg_write = 0;
                 alu_src = 1;
                 mem_write = 1;
                 alu_op = 2'b00;
-                mem_to_reg = 0; // don't care
+                mem_to_reg = 0;
                 branch = 0;
                 mem_read = 0;
             end
-            7'b1100011: begin // B-type (branch)
+            7'b1100011: begin
                 reg_write = 0;
-                alu_src = 0; // don't care
+                alu_src = 0;
                 mem_write = 0;
-                alu_op = 2'b01; // for branch comparison
-                mem_to_reg = 0; // don't care
+                alu_op = 2'b01;
+                mem_to_reg = 0;
                 branch = 1;
                 mem_read = 0;
             end
-            default: begin // default case for unsupported opcodes
+            default: begin
                 reg_write = 0;
-                alu_src = 0; // don't care
+                alu_src = 0;
                 mem_write = 0;
-                alu_op = 2'b00; // default ALU operation
-                mem_to_reg = 0; // don't care
-                branch = 0; // no branching
-                mem_read = 0; // no memory read
+                alu_op = 2'b00;
+                mem_to_reg = 0;
+                branch = 0;
+                mem_read = 0;
             end
         endcase
     end

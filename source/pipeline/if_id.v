@@ -19,6 +19,5 @@ module if_id (
             pc_out <= pc_in;
             instruction_out <= instruction_in;
         end
-        // else: hold current value (stall)
     end
 endmodule

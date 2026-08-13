@@ -1,0 +1,8 @@
+build/
+*.vcd
+*.vvp
+.DS_Store
+
+# ad-hoc `iverilog -o sim_xxx` binaries dropped at the repo root
+/sim
+/sim_*

@@ -13,6 +13,7 @@ module pc_im_tb;
     pc pc_inst (
         .clk(clk),
         .rst(rst),
+        .pc_write(1'b1),
         .pc_next(pc_next),
         .pc_out(pc_current)
     );

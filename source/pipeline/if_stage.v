@@ -9,7 +9,6 @@ module if_stage(
     output [31:0] pc_plus4
 );
 
-    //pc
     pc pc_inst(
         .clk(clk),
         .rst(rst),
@@ -17,7 +16,6 @@ module if_stage(
         .pc_next(pc_next),
         .pc_out(pc_out)
     );
-    //instruction memory
     instruction_memory instruction_memory_inst(
         .addr(pc_out),
         .instruction(instruction)

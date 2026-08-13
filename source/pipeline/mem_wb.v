@@ -1,7 +1,7 @@
 module mem_wb (
     input clk,
     input rst,
-    
+
     input [31:0] read_data_mem_in,
     input [31:0] alu_result_in,
     input [4:0] rd_in,

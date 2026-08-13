@@ -1,7 +1,7 @@
 module hazard_detection(
     input id_ex_mem_read,
     input [4:0] id_ex_rd,
-    input [4:0] if_id_rs1, 
+    input [4:0] if_id_rs1,
     input [4:0] if_id_rs2,
 
     output reg pc_write,

@@ -20,7 +20,11 @@ module register_file (
 
     assign read_data1 = (rs1 == 5'b0) ? 32'b0 : registers[rs1];
     assign read_data2 = (rs2 == 5'b0) ? 32'b0 : registers[rs2];
-    always @(posedge clk) begin
+
+    // written on the falling edge so a same-cycle WB write is visible
+    // to ID's read well before the next rising edge (write-first behavior
+    // without an explicit WB->ID forwarding path)
+    always @(negedge clk) begin
         if (reg_write && (rd != 5'b0)) begin
             registers[rd] <= write_data;
         end

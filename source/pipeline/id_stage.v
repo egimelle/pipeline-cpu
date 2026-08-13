@@ -25,8 +25,7 @@ module id_stage(
     output funct7,
     output is_rtype
 );
-   
-    //control unit
+
     control_unit control_unit_inst(
         .opcode(instruction[6:0]),
         .reg_write(reg_write),
@@ -38,13 +37,11 @@ module id_stage(
         .alu_op(alu_op)
     );
 
-    //immediate generator
     imm_gen imm_gen_inst(
         .instruction(instruction),
         .imm_out(imm_out)
     );
 
-    //register file
     register_file register_file_inst(
         .clk(clk),
         .reg_write(reg_write_wb),

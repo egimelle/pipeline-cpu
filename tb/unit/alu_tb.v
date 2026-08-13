@@ -14,30 +14,29 @@ alu alu_inst (
     .zero(zero)
 );
 
-initial begin 
+initial begin
     $dumpfile("alu_tb.vcd");
     $dumpvars(0, alu_tb);
 
     a=10; b=3;
-    alu_control = 4'b0000; #1; // ADD
-        $display("ADD: 10+3 = %0d (ожидаем 13), zero=%b", result, zero);
+    alu_control = 4'b0000; #1;
+        $display("ADD: 10+3 = %0d (expect 13), zero=%b", result, zero);
 
-        alu_control = 4'b0001; #1; // SUB
-        $display("SUB: 10-3 = %0d (ожидаем 7), zero=%b", result, zero);
+        alu_control = 4'b0001; #1;
+        $display("SUB: 10-3 = %0d (expect 7), zero=%b", result, zero);
 
-        alu_control = 4'b0010; #1; // AND
-        $display("AND: 10&3 = %0d (ожидаем 2), zero=%b", result, zero);
+        alu_control = 4'b0010; #1;
+        $display("AND: 10&3 = %0d (expect 2), zero=%b", result, zero);
 
-        alu_control = 4'b0011; #1; // OR
-        $display("OR:  10|3 = %0d (ожидаем 11), zero=%b", result, zero);
+        alu_control = 4'b0011; #1;
+        $display("OR:  10|3 = %0d (expect 11), zero=%b", result, zero);
 
-        alu_control = 4'b0101; #1; // SLT
-        $display("SLT: 10<3 = %0d (ожидаем 0), zero=%b", result, zero);
+        alu_control = 4'b0101; #1;
+        $display("SLT: 10<3 = %0d (expect 0), zero=%b", result, zero);
 
-        // отдельно проверим zero-флаг на реально равных числах
         a = 5; b = 5;
-        alu_control = 4'b0001; #1; // SUB, 5-5=0
-        $display("SUB: 5-5 = %0d (ожидаем 0), zero=%b (ожидаем 1)", result, zero);
+        alu_control = 4'b0001; #1;
+        $display("SUB: 5-5 = %0d (expect 0), zero=%b (expect 1)", result, zero);
 
         $finish;
 end

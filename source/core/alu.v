@@ -1,4 +1,3 @@
-//alu.v
 module alu(
     input [31:0] a,
     input [31:0] b,
@@ -11,13 +10,13 @@ module alu(
 
     always @(*) begin
         case (alu_control)
-            4'b0000: result = a + b; // ADD
-            4'b0001: result = a - b; // SUB
-            4'b0010: result = a & b; // AND
-            4'b0011: result = a | b; // OR
-            4'b0100: result = a ^ b; // XOR
-            4'b0101: result = (a < b) ? 32'b1 : 32'b0; // SLT
-            default: result = 32'b0; // default case
+            4'b0000: result = a + b;
+            4'b0001: result = a - b;
+            4'b0010: result = a & b;
+            4'b0011: result = a | b;
+            4'b0100: result = a ^ b;
+            4'b0101: result = (a < b) ? 32'b1 : 32'b0;
+            default: result = 32'b0;
         endcase
     end
 

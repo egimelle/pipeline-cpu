@@ -9,7 +9,6 @@ module mem_stage(
     output [31:0] mem_read_data
 );
 
-    //data memory
     data_memory data_memory_inst(
         .clk(clk),
         .mem_read(mem_read),

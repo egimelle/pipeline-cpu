@@ -9,7 +9,7 @@ top_pipeline top_pipeline_inst(
 );
 always #5 clk = ~clk;
 
-initial begin 
+initial begin
     $dumpfile("flush_tb.vcd");
     $dumpvars(0, top_pipeline_flush_tb);
 

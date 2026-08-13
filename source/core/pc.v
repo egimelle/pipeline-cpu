@@ -12,6 +12,5 @@ module pc (
             pc_out <= 32'b0;
         else if (pc_write)
             pc_out <= pc_next;
-        // else: hold current value (stall)
     end
 endmodule

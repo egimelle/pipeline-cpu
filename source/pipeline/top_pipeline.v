@@ -5,7 +5,6 @@ module top_pipeline(
 wire flush;
 wire [31:0] if_pc_next;
 wire pc_write, if_id_write, control_mux_sel;
-//IF
 wire [31:0] if_pc_out, if_instruction, if_pc_plus4;
 if_stage if_stage_inst(
     .clk(clk),
@@ -17,7 +16,6 @@ if_stage if_stage_inst(
     .pc_plus4(if_pc_plus4)
 );
 
-//IF/ID
 wire [31:0] id_pc, id_instruction;
 if_id if_id_inst(
     .clk(clk),
@@ -30,7 +28,6 @@ if_id if_id_inst(
     .instruction_out(id_instruction)
 );
 
-//ID
 wire reg_write, alu_src, mem_write, mem_to_reg, branch, mem_read;
 wire [1:0] alu_op;
 wire [31:0] read_data1, read_data2, imm_out;
@@ -46,9 +43,9 @@ wire [31:0] wb_write_back_data;
 id_stage id_stage_inst(
     .clk(clk),
     .instruction(id_instruction),
-    .write_data_wb(wb_write_back_data), 
-    .reg_write_wb(wb_reg_write), 
-    .rd_wb(wb_rd), 
+    .write_data_wb(wb_write_back_data),
+    .reg_write_wb(wb_reg_write),
+    .rd_wb(wb_rd),
 
     .reg_write(reg_write),
     .alu_src(alu_src),
@@ -70,8 +67,6 @@ id_stage id_stage_inst(
     .is_rtype(is_rtype)
 );
 
-//---- Hazard detection unit (load-use stall) ----
-// ID/EX output wires declared early so hazard_detection can bind them
 wire [31:0] ex_pc, ex_read_data1, ex_read_data2, ex_imm_out;
 wire [4:0] ex_rs1, ex_rs2, ex_rd;
 wire [1:0] ex_alu_op;
@@ -90,8 +85,6 @@ hazard_detection hazard_detection_inst(
     .control_mux_sel(control_mux_sel)
 );
 
-//ID/EX
-//---- Bubble insertion mux: zero out control signals into ID/EX during stall ----
 wire mux_reg_write   = control_mux_sel ? 1'b0 : reg_write;
 wire mux_mem_write   = control_mux_sel ? 1'b0 : mem_write;
 wire mux_mem_to_reg  = control_mux_sel ? 1'b0 : mem_to_reg;
@@ -144,12 +137,10 @@ id_ex id_ex_inst(
     .is_rtype_out(ex_is_rtype)
 );
 
-//EX/MEM wires (declared early so forwarding_unit / ex_stage can bind them)
 wire [31:0] mem_alu_result, mem_write_data;
 wire [4:0] mem_rd;
 wire mem_reg_write, mem_mem_write, mem_mem_to_reg, mem_mem_read;
 
-//---- Forwarding unit ----
 wire [1:0] forward_a, forward_b;
 forwarding_unit forwarding_unit_inst(
     .ex_rs1(ex_rs1),
@@ -165,8 +156,7 @@ forwarding_unit forwarding_unit_inst(
     .forward_b(forward_b)
 );
 
-//EX
-wire [31:0] ex_alu_result, ex_branch_target;
+wire [31:0] ex_alu_result, ex_branch_target, ex_store_data;
 wire ex_zero;
 ex_stage ex_stage_inst(
     .pc(ex_pc),
@@ -186,16 +176,16 @@ ex_stage ex_stage_inst(
 
     .alu_result(ex_alu_result),
     .zero(ex_zero),
-    .branch_target(ex_branch_target)
+    .branch_target(ex_branch_target),
+    .store_data(ex_store_data)
 );
 
-//EX/MEM
 ex_mem ex_mem_inst(
     .clk(clk),
     .rst(rst),
 
     .alu_result_in(ex_alu_result),
-    .write_data_in(ex_read_data2),
+    .write_data_in(ex_store_data),
     .rd_in(ex_rd),
     .reg_write_in(ex_reg_write),
     .mem_write_in(ex_mem_write),
@@ -211,7 +201,6 @@ ex_mem ex_mem_inst(
     .mem_read_out(mem_mem_read)
 );
 
-//MEM
 wire [31:0] mem_read_data;
 mem_stage mem_stage_inst(
     .clk(clk),
@@ -222,7 +211,6 @@ mem_stage mem_stage_inst(
     .mem_read_data(mem_read_data)
 );
 
-//MEM/WB
 mem_wb mem_wb_inst(
     .clk(clk),
     .rst(rst),
@@ -239,8 +227,6 @@ mem_wb mem_wb_inst(
     .mem_to_reg_out(wb_mem_to_reg)
 );
 
-
-//WB
 wb_stage wb_stage_inst(
     .mem_to_reg(wb_mem_to_reg),
     .mem_read_data(wb_read_data_mem),
@@ -249,8 +235,6 @@ wb_stage wb_stage_inst(
     .write_back_data(wb_write_back_data)
 );
 
-
-//branch control
 wire pc_src;
 assign pc_src = ex_branch && ex_zero;
 assign if_pc_next = pc_src ? ex_branch_target : if_pc_plus4;

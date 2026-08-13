@@ -10,7 +10,6 @@ module ex_mem(
     input mem_write_in,
     input mem_to_reg_in,
     input mem_read_in,
-    input zero_in,
 
     output reg [31:0] alu_result_out,
     output reg [31:0] write_data_out,
@@ -19,7 +18,7 @@ module ex_mem(
     output reg reg_write_out,
     output reg mem_write_out,
     output reg mem_to_reg_out,
-    output reg mem_read_out 
+    output reg mem_read_out
 );
     always @(posedge clk or posedge rst) begin
         if (rst) begin

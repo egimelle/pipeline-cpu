@@ -24,7 +24,6 @@ module id_ex (
     input funct7_in,
     input is_rtype_in,
 
-
     output reg [31:0] pc_out,
     output reg [31:0] read_data1_out,
     output reg [31:0] read_data2_out,
@@ -40,7 +39,7 @@ module id_ex (
     output reg mem_write_out,
     output reg mem_to_reg_out,
     output reg mem_read_out,
-    output reg branch_out,  
+    output reg branch_out,
 
     output reg [2:0] funct3_out,
     output reg funct7_out,
@@ -89,7 +88,7 @@ module id_ex (
 
             funct3_out <= funct3_in;
             funct7_out <= funct7_in;
-            is_rtype_out <= is_rtype_in; 
+            is_rtype_out <= is_rtype_in;
         end
     end
 endmodule

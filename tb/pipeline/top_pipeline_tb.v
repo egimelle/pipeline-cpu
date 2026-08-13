@@ -22,7 +22,6 @@ module top_pipeline_tb;
 
         #200;
 
-        // финальные значения регистров (через иерархию до regfile внутри id_stage)
         $display("---- Final registers ----");
         $display("x1 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[1]);
         $display("x2 = %d", top_pipeline_inst.id_stage_inst.register_file_inst.registers[2]);

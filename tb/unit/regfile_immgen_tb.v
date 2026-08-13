@@ -30,7 +30,7 @@ always #5 clk = ~clk;
 initial begin
     $dumpfile("regfile_immgen_tb.vcd");
     $dumpvars(0, regfile_immgen_tb);
-    
+
     reg_write = 1;
     rd = 5'd5;
     write_data = 32'd42;
@@ -43,11 +43,11 @@ initial begin
     $display("regfile test : read_data1 (x5) = %0d, (wait for 42)", read_data1);
     $display("regfile test : read_data2 (x0) = %0d, (wait for 0)", read_data2);
 
-    test_instr = 32'h00500093; // addi x1, x0, 5
+    test_instr = 32'h00500093;
     #1;
     $display("imm_gen test : imm_out = %0d, (wait for 5)", imm_out);
 
-    test_instr = 32'h00112223; // s-type instruction.. sw x1, 4(x2)
+    test_instr = 32'h00112223;
     #1;
     $display("imm_gen test : imm_out = %0d, (wait for 4)", imm_out);
 

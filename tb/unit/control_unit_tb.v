@@ -25,34 +25,29 @@ initial begin
     $dumpfile ("control_unit_tb.vcd");
     $dumpvars(0, control_unit_tb);
 
-    // Test R-type instruction
-    opcode = 7'b0110011; // R-type
+    opcode = 7'b0110011;
     #1;
-    $display("add: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b", 
+    $display("add: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b",
         reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
 
-    // Test I-type instruction (arithmetic)
-    opcode = 7'b0010011; // I-type (arithmetic)
+    opcode = 7'b0010011;
     #1;
-    $display("addi: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b", 
-        reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
-    
-    // Test I-type instruction (load)
-    opcode = 7'b0000011; // I-type (load)
-    #1;
-    $display("lw: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b", 
-        reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
-    
-    // Test S-type instruction (store)
-    opcode = 7'b0100011; // S-type (store)
-    #1;
-    $display("sw: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b", 
+    $display("addi: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b",
         reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
 
-    // Test B-type instruction (branch)
-    opcode = 7'b1100011; // B-type (branch)
+    opcode = 7'b0000011;
     #1;
-    $display("beq: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b", 
+    $display("lw: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b",
+        reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
+
+    opcode = 7'b0100011;
+    #1;
+    $display("sw: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b",
+        reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
+
+    opcode = 7'b1100011;
+    #1;
+    $display("beq: reg_write=%b, alu_src=%b, mem_write=%b, alu_op=%b, mem_to_reg=%b, branch=%b, mem_read=%b",
         reg_write, alu_src, mem_write, alu_op, mem_to_reg, branch, mem_read);
 
     $finish;
