@@ -5,25 +5,16 @@ Verilog, with load-use hazard detection, full data forwarding, and
 branch-flush control. A single-cycle reference datapath is kept alongside it
 for comparison.
 
-```
-        ┌────┐   ┌────┐   ┌────┐   ┌────┐   ┌────┐   ┌────┐   ┌────┐   ┌────┐
- clk ─▶ │ IF │──▶│IF/ID│──▶│ ID │──▶│ID/EX│──▶│ EX │──▶│EX/MEM│─▶│ MEM │─▶│MEM/WB│─▶ WB
-        └────┘   └────┘   └────┘   └────┘   └────┘   └────┘   └────┘   └────┘
-           │                          ▲          │
-           │                          │          ▼
-           └────── stall / flush ─────┴──── forward A / B ────▶ (EX/MEM, MEM/WB)
-```
-
 ## Features
 
 - Full 5-stage in-order pipeline with 4 pipeline registers (`IF/ID`, `ID/EX`,
   `EX/MEM`, `MEM/WB`)
-- **Load-use hazard detection** — stalls PC and IF/ID for one cycle and
+- **Load-use hazard detection** - stalls PC and IF/ID for one cycle and
   bubbles ID/EX when an instruction needs a value a preceding `lw` hasn't
   loaded yet
-- **Full operand forwarding** — EX/MEM → EX and MEM/WB → EX, covering ALU
+- **Full operand forwarding** - EX/MEM → EX and MEM/WB → EX, covering ALU
   operands, branch comparisons, and store data
-- **Branch flush** — branches resolve in EX; a taken branch flushes the
+- **Branch flush** - branches resolve in EX; a taken branch flushes the
   wrong-path instruction in IF/ID and redirects the PC
 - A synchronous register file with `x0` hardwired to zero
 - A single-cycle datapath (`source/examples/single_cycle/`) built from the
